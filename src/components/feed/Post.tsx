@@ -14,6 +14,8 @@ type PostData = PostSchema & {
   _count: {
     comments: number;
   };
+  type: string;
+  repostDesc?: string;
 };
 const Post = ({ postData }: { postData: PostData }) => {
   const { userId: currentUserId } = auth();
@@ -40,6 +42,7 @@ const Post = ({ postData }: { postData: PostData }) => {
           postId={postData.id}
           currentUserId={currentUserId}
           postUserId={postData.userId}
+          type="original"
         />
       </div>
       {/* DESC */}

@@ -4,8 +4,12 @@ import Post from "./Post";
 import { auth } from "@clerk/nextjs/server";
 import { Post as PostSchema, User } from "@prisma/client";
 import { notFound } from "next/navigation";
+import Repost from "./Repost";
 
 type PostData = PostSchema & {
+  type: string;
+  repostId?: number;
+  repostDesc?: string;
   user: User;
   likes: {
     userId: string;
@@ -19,7 +23,6 @@ const Feed = async ({ username }: { username?: string }) => {
   if (!currentUserId) return;
 
   let feedData: PostData[] = [];
-
   if (username) {
     const user = await prisma.user.findUnique({ where: { username } });
     if (!user) return notFound();
@@ -29,7 +32,7 @@ const Feed = async ({ username }: { username?: string }) => {
         followingId: user?.id,
       },
     });
-    if (!isFollow) return;
+    if (!isFollow && currentUserId !== user.id) return;
     const userPosts = await prisma.post.findMany({
       where: {
         userId: user.id,
@@ -51,7 +54,45 @@ const Feed = async ({ username }: { username?: string }) => {
         },
       },
     });
-    feedData = userPosts;
+    const sharedPosts = await prisma.sharedPost.findMany({
+      where: {
+        userId: user.id,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        post: {
+          include: {
+            user: true,
+            likes: {
+              select: {
+                userId: true,
+              },
+            },
+            _count: {
+              select: {
+                comments: true,
+              },
+            },
+          },
+        },
+      },
+    });
+    feedData = [
+      ...userPosts.map((item) => ({
+        ...item,
+        type: "original",
+        repostDesc: "",
+        repostId: undefined,
+      })),
+      ...sharedPosts.map((record) => ({
+        ...record.post,
+        type: "re-post",
+        repostDesc: record.desc ?? "",
+        repostId: record.id,
+      })),
+    ];
   } else {
     const following = await prisma.follower.findMany({
       where: {
@@ -84,7 +125,7 @@ const Feed = async ({ username }: { username?: string }) => {
         },
       },
     });
-    feedData = allPosts;
+    feedData = allPosts.map((post) => ({ ...post, type: "original" }));
   }
   return (
     <div className="bg-white p-4 rounded-lg shadow-md flex flex-col gap-12">
@@ -93,7 +134,16 @@ const Feed = async ({ username }: { username?: string }) => {
           return (
             <>
               {index !== 0 && index % 3 === 0 && <Ad size="lg" />}
-              <Post postData={feedItem} key={feedItem.id} />
+              {feedItem.type === "original" && (
+                <Post postData={feedItem} key={feedItem.id} />
+              )}
+              {feedItem.type === "re-post"  && (
+                <Repost
+                  postData={feedItem}
+                  key={feedItem.id}
+                  username={username}
+                />
+              )}
             </>
           );
         })

@@ -1,6 +1,6 @@
 "use client";
 
-import { deletePost } from "@/lib/actions";
+import { deletePost, deleteRepost } from "@/lib/actions";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -8,10 +8,12 @@ const PostOptions = ({
   postId,
   currentUserId,
   postUserId,
+  type,
 }: {
   postId: number;
   currentUserId: string;
   postUserId: string;
+  type: "original" | "repost";
 }) => {
   const [open, setOpen] = useState(false);
   return (
@@ -29,7 +31,11 @@ const PostOptions = ({
           <span className="cursor-pointer">View</span>
           <span className="cursor-pointer">Re-post</span>
           {currentUserId === postUserId && (
-            <form action={() => deletePost(postId)}>
+            <form
+              action={() =>
+                type === "repost" ? deleteRepost(postId) : deletePost(postId)
+              }
+            >
               <button className="text-red-500">Delete</button>
             </form>
           )}

@@ -278,6 +278,20 @@ export const deletePost = async (id: number) => {
   }
 };
 
+export const deleteRepost = async (id: number) => {
+  const { userId } = auth();
+  if (!userId) throw new Error("User not Authenticated!");
+  try {
+    await prisma.sharedPost.delete({
+      where: { id, userId },
+    });
+    revalidatePath("/");
+  } catch (err) {
+    console.error(err);
+    throw new Error("Something went wrong");
+  }
+};
+
 export const addStory = async (img: string) => {
   const { userId } = auth();
   if (!userId) throw new Error("User not Authenticated!");
@@ -307,5 +321,31 @@ export const addStory = async (img: string) => {
   } catch (err) {
     console.log(err);
     throw new Error("Something went wrong!");
+  }
+};
+
+
+export const sharePost = async (desc: string, postId: number) => {
+  const { userId } = auth();
+  if (!userId) throw new Error("User not Authenticated!");
+  const Desc = z.string().min(0).max(255);
+  const validatedDesc = Desc.safeParse(desc);
+  if (!validatedDesc.success) {
+    throw new Error(
+      "Description is more than 255 characters long."
+    );
+  }
+  try {
+    const createdPost = await prisma.sharedPost.create({
+      data: {
+        userId,
+        postId,
+        desc: validatedDesc.data,
+      },
+    });
+    revalidatePath("/");
+  } catch (err) {
+    console.error(err);
+    throw new Error("Something went wrong");
   }
 };
