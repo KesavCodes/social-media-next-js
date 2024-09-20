@@ -9,15 +9,21 @@ const ProfileCard = async () => {
   const userData = await prisma.user.findUnique({
     where: { id: userId },
     include: {
-      _count: {
+      followers: {
         select: {
-          followers: true,
+          following: {
+            select: {
+              avatar: true,
+              id: true,
+            },
+          },
         },
       },
     },
   });
   if (!userData) return;
-  const followersCount = userData._count.followers || 0;
+  const followersCount = userData.followers.length || 0;
+  const miniFollowerAvatars = userData.followers.map((item) => item.following);
   let displayName = `${userData.firstName || ""} ${userData.surName || ""}`;
   if (displayName.trim().length === 0)
     displayName = userData.username || "Unknown user";
@@ -42,27 +48,16 @@ const ProfileCard = async () => {
         <span className="font-semibold">{displayName}</span>
         <div className="flex gap-4 items-center">
           <div className="flex">
-            <Image
-              src="https://images.unsplash.com/photo-1722197230024-f5bcb12b70c3?q=80&w=2072&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="cover photo"
-              height={20}
-              width={20}
-              className="rounded-full object-cover h-5 w-5"
-            />
-            <Image
-              src="https://images.unsplash.com/photo-1722110650001-13a5025b198c?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="cover photo"
-              height={20}
-              width={20}
-              className="rounded-full object-cover h-5 w-5"
-            />
-            <Image
-              src="https://images.unsplash.com/photo-1722218530941-fb046c70bb30?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-              alt="cover photo"
-              height={20}
-              width={20}
-              className="rounded-full object-cover h-5 w-5"
-            />
+            {miniFollowerAvatars.map((follower) => (
+              <Image
+                key={follower.id}
+                src={follower.avatar || "/noAvatar.png"}
+                alt="cover photo"
+                height={20}
+                width={20}
+                className="rounded-full object-cover h-5 w-5"
+              />
+            ))}
           </div>
           <span className="text-xs text-gray-500">
             {followersCount} {`follower${followersCount > 1 ? "s" : ""}`}

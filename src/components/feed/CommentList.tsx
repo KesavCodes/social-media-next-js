@@ -45,6 +45,7 @@ const CommentList = ({
           work: "",
           website: "",
           createdAt: new Date(Date.now()),
+          birthDay: new Date(Date.now()),
         },
       };
       return [placeholderComment, ...prevState];

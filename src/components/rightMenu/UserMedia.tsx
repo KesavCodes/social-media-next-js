@@ -1,9 +1,19 @@
 import prisma from "@/lib/client";
+import { auth } from "@clerk/nextjs/server";
 import { User } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 
 const UserMedia = async ({ user }: { user: User }) => {
+  const { userId: currentUserId } = auth();
+  if (!currentUserId) return;
+  const isFollow = await prisma.follower.findFirst({
+    where: {
+      followerId: currentUserId,
+      followingId: user?.id,
+    },
+  });
+  if (!isFollow) return;
   const postWithMedia = await prisma.post.findMany({
     where: {
       userId: user.id,
@@ -28,16 +38,18 @@ const UserMedia = async ({ user }: { user: User }) => {
       </header>
       {/* BOTTOM */}
       <div className="flex gap-4 flex-wrap mt-4">
-        {postWithMedia.length ? postWithMedia.map((post) => (
-          <div key={post.id} className="relative w-1/5 h-24">
-            <Image
-              src={post.img!}
-              alt={post.desc}
-              fill
-              className="rounded-md object-cover"
-            />
-          </div>
-        )): "No media found"}
+        {postWithMedia.length
+          ? postWithMedia.map((post) => (
+              <div key={post.id} className="relative w-1/5 h-24">
+                <Image
+                  src={post.img!}
+                  alt={post.desc}
+                  fill
+                  className="rounded-md object-cover"
+                />
+              </div>
+            ))
+          : "No media found"}
       </div>
     </section>
   );
