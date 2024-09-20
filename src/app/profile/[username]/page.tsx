@@ -9,6 +9,7 @@ import { notFound } from "next/navigation";
 const ProfilePage = async ({ params }: { params: { username: string } }) => {
   const username = params.username;
   let userData;
+  let isMyProfile;
   try {
     userData = await prisma.user.findUnique({
       where: { username },
@@ -24,6 +25,7 @@ const ProfilePage = async ({ params }: { params: { username: string } }) => {
     });
     if (!userData) return notFound();
     const { userId: currentUserId } = auth();
+    isMyProfile = currentUserId === userData.id;
     if (currentUserId) {
       let isBlocked = await prisma.block.findFirst({
         where: {
@@ -42,7 +44,7 @@ const ProfilePage = async ({ params }: { params: { username: string } }) => {
   return (
     <main className="flex gap-6 pt-6">
       <div className="hidden xl:block w-[20%]">
-        <LeftMenu type="profile" />
+        <LeftMenu type={isMyProfile ? "myProfile":"otherProfile"} />
       </div>
       <div className="w-full lg:w-[70%] xl:w-[50%]">
         <div className="flex flex-col gap-6">
