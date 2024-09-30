@@ -9,6 +9,7 @@ import {
   SignIn,
   UserButton,
 } from "@clerk/nextjs";
+import Search from "./Search";
 
 const Navbar = () => {
   return (
@@ -45,14 +46,7 @@ const Navbar = () => {
             Stories
           </Link>
         </div>
-        <div className="hidden xl:flex gap-1 border-b-2 items-center p-2 bg-slate-100 rounded-xl">
-          <input
-            type="text"
-            placeholder="search..."
-            className="bg-transparent outline-none"
-          />
-          <Image src="/search.png" alt="search icon" height={18} width={18} />
-        </div>
+        <Search />
       </div>
       {/* RIGHT */}
       <div className="w-[20%] flex items-center gap-4 xl:gap-8 justify-end">

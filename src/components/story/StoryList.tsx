@@ -6,6 +6,7 @@ import { Story, User } from "@prisma/client";
 import { CldUploadWidget } from "next-cloudinary";
 import Image from "next/image";
 import { useOptimistic, useState } from "react";
+import StoryModal from "./StoryModal";
 
 type StoryWithUser = Story & {
   user: User;
@@ -15,6 +16,8 @@ const StoryList = ({ stories }: { stories: StoryWithUser[] }) => {
   const { user: currentUser, isLoaded } = useUser();
   const [storyList, setStoryList] = useState(stories);
   const [image, setImage] = useState("");
+  const [showStoryModal, setShowStoryModal] = useState(false);
+  const [currStory, setCurrStory] = useState("");
   const [optimisticStoryList, setOptimisticStoryList] =
     useOptimistic(storyList);
 
@@ -43,6 +46,7 @@ const StoryList = ({ stories }: { stories: StoryWithUser[] }) => {
           work: "",
           website: "",
           createdAt: new Date(Date.now()),
+          birthDay: new Date(Date.now()),
         },
       },
       ...prevState,
@@ -107,12 +111,14 @@ const StoryList = ({ stories }: { stories: StoryWithUser[] }) => {
               className="flex flex-col items-center gap-2 cursor-pointer"
               key={story.id}
             >
+              {showStoryModal && <StoryModal story={story} closeModal={()=>setShowStoryModal(false)}/>}
               <Image
                 width={80}
                 height={80}
                 alt="profile pic"
                 className="rounded-full w-20 h-20 ring-2"
                 src={user.avatar || "noAvatar.png"}
+                onClick={()=>setShowStoryModal(true)}
               />
               <span>{displayName}</span>
             </div>

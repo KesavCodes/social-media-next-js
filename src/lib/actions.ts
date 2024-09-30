@@ -324,19 +324,16 @@ export const addStory = async (img: string) => {
   }
 };
 
-
 export const sharePost = async (desc: string, postId: number) => {
   const { userId } = auth();
   if (!userId) throw new Error("User not Authenticated!");
   const Desc = z.string().min(0).max(255);
   const validatedDesc = Desc.safeParse(desc);
   if (!validatedDesc.success) {
-    throw new Error(
-      "Description is more than 255 characters long."
-    );
+    throw new Error("Description is more than 255 characters long.");
   }
   try {
-    const createdPost = await prisma.sharedPost.create({
+    await prisma.sharedPost.create({
       data: {
         userId,
         postId,
@@ -344,6 +341,31 @@ export const sharePost = async (desc: string, postId: number) => {
       },
     });
     revalidatePath("/");
+  } catch (err) {
+    console.error(err);
+    throw new Error("Something went wrong");
+  }
+};
+
+export const searchUser = async (search: string) => {
+  try {
+    const users = await prisma.user.findMany({
+      where: {
+        OR: [
+          { username: { contains: search } },
+          { firstName: { contains: search } },
+          { surName: { contains: search } },
+        ],
+      },
+      select: {
+        id: true,
+        username: true,
+        firstName: true,
+        surName: true,
+        avatar: true,
+      },
+    });
+    return users;
   } catch (err) {
     console.error(err);
     throw new Error("Something went wrong");

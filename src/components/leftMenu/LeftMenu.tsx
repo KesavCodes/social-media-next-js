@@ -10,7 +10,7 @@ const LeftMenu = ({
   return (
     <div className="flex flex-col gap-6">
       {(type === "home" || type === "otherProfile") && <ProfileCard />}
-      <PanelOptions />
+      {/* <PanelOptions /> */}
       <Ad size="sm" />
     </div>
   );

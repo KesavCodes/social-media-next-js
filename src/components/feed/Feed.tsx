@@ -10,6 +10,7 @@ type PostData = PostSchema & {
   type: string;
   repostId?: number;
   repostDesc?: string;
+  repostDate: Date | null;
   user: User;
   likes: {
     userId: string;
@@ -85,14 +86,17 @@ const Feed = async ({ username }: { username?: string }) => {
         type: "original",
         repostDesc: "",
         repostId: undefined,
+        repostDate: null,
       })),
       ...sharedPosts.map((record) => ({
         ...record.post,
         type: "re-post",
         repostDesc: record.desc ?? "",
         repostId: record.id,
+        repostDate: record.createdAt,
       })),
     ];
+    console.log(feedData);
   } else {
     const following = await prisma.follower.findMany({
       where: {
@@ -125,8 +129,19 @@ const Feed = async ({ username }: { username?: string }) => {
         },
       },
     });
-    feedData = allPosts.map((post) => ({ ...post, type: "original" }));
+    feedData = allPosts.map((post) => ({
+      ...post,
+      type: "original",
+      repostDate: null,
+    }));
   }
+
+  feedData = feedData.sort((a, b) => {
+    return (
+      new Date(b.type === "re-post" ? b.repostDate! : b.createdAt).valueOf() -
+      new Date(a.type === "re-post" ? a.repostDate! : a.createdAt).valueOf()
+    );
+  });
   return (
     <div className="bg-white p-4 rounded-lg shadow-md flex flex-col gap-12">
       {feedData.length ? (
@@ -137,7 +152,7 @@ const Feed = async ({ username }: { username?: string }) => {
               {feedItem.type === "original" && (
                 <Post postData={feedItem} key={feedItem.id} />
               )}
-              {feedItem.type === "re-post"  && (
+              {feedItem.type === "re-post" && (
                 <Repost
                   postData={feedItem}
                   key={feedItem.id}

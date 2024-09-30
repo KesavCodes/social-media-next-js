@@ -19,6 +19,7 @@ const ProfilePage = async ({ params }: { params: { username: string } }) => {
             followers: true,
             followings: true,
             posts: true,
+            repost: true,
           },
         },
       },
@@ -44,7 +45,7 @@ const ProfilePage = async ({ params }: { params: { username: string } }) => {
   return (
     <main className="flex gap-6 pt-6">
       <div className="hidden xl:block w-[20%]">
-        <LeftMenu type={isMyProfile ? "myProfile":"otherProfile"} />
+        <LeftMenu type={isMyProfile ? "myProfile" : "otherProfile"} />
       </div>
       <div className="w-full lg:w-[70%] xl:w-[50%]">
         <div className="flex flex-col gap-6">
@@ -67,7 +68,9 @@ const ProfilePage = async ({ params }: { params: { username: string } }) => {
             <h1 className="mt-20 mb-4 text-2xl font-medium">{displayName}</h1>
             <div className="flex items-center justify-between gap-12 mb-4">
               <div className="flex flex-col items-center">
-                <span className="font-medium">{userData._count.posts}</span>
+                <span className="font-medium">
+                  {userData._count.posts + userData._count.repost}
+                </span>
                 <span className="text-sm">Posts</span>
               </div>
               <div className="flex flex-col items-center">
@@ -82,7 +85,7 @@ const ProfilePage = async ({ params }: { params: { username: string } }) => {
               </div>
             </div>
           </div>
-          <Feed username={userData.username}/>
+          <Feed username={userData.username} />
         </div>
       </div>
       <div className="hidden lg:block w-[30%]">
