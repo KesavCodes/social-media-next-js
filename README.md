@@ -69,7 +69,7 @@ To start the project, follow these steps:
 
 - **React and Next.js Features**:
   - Server actions to handle form submissions.
-  - `useFormAction` hook to receive data from the backend.
+  - `useActionState` hook update state based on the result of a form action.
   - Optimistic UI updates using the `useOptimistic` hook.
 
 - **Styling**:
